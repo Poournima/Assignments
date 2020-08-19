@@ -83,18 +83,35 @@ public class NewBookIssueAction extends Action {
 			if (book.getIssueStatus() == "No") {
 				errors.add("common.bookIssueStatus", new ActionMessage("error.common.bookNotIssuable.required"));
 			} else {
-//				if (member.getNoofCopies() >= member.getBookLimit()) {
-//					errors.add("common.bookCount", new ActionMessage("error.common.bookCount.required"));
-//				} else {
-					date = (Date) sdf.parse(String.valueOf(bookForm.getIssueDate()));
-					cal.setTime(date);
-					int day = cal.get(cal.DATE);
-					cal.set(cal.DATE, day);
-					day = cal.get(Calendar.DATE) + 10;
-					int month = cal.get(Calendar.MONTH);
-					int year = cal.get(Calendar.YEAR);
-					String issuedate = String.valueOf(day) + "-" + String.valueOf(month) + "-" + String.valueOf(year);
-					bookForm.setReturnDate((issuedate));
+				if (member.getNoofCopies() >= member.getBookLimit()) {
+					errors.add("common.bookCount", new ActionMessage("error.common.bookCount.required"));
+				} else {
+					Date issueDate = sdf.parse(String.valueOf(bookForm.getIssueDate()));
+					if (member.getMemberType().equals("Faculty")) {
+						{
+
+							cal.setTime(issueDate);
+							int day = cal.get(Calendar.DATE);
+							int month = cal.get(Calendar.MONTH);
+							cal.set(Calendar.MONTH, month + 3);
+							month = cal.get(Calendar.MONTH);
+							int year = cal.get(Calendar.YEAR);
+							String issuedate = String.valueOf(year) + "-" + String.valueOf(month) + "-"
+									+ String.valueOf(day);
+							bookForm.setReturnDate((issuedate));
+						}
+					} else {
+
+						cal.setTime(issueDate);
+						int day = cal.get(Calendar.DATE);
+						cal.set(Calendar.DATE, day);
+						day = cal.get(Calendar.DATE) + 10;
+						int month = cal.get(Calendar.MONTH);
+						int year = cal.get(Calendar.YEAR);
+						String issuedate = String.valueOf(day) + "-" + String.valueOf(month) + "-"
+								+ String.valueOf(year);
+						bookForm.setReturnDate((issuedate));
+					}
 
 					member.setMemberId(bookForm.getMemberId());
 					member.setNoofCopies(member.getNoofCopies() + 1);
@@ -103,15 +120,17 @@ public class NewBookIssueAction extends Action {
 					issue.setIssueId(bookForm.getIssueId());
 					issue.setMember(bookForm.getMember());
 					issue.setBook(bookForm.getBook());
-					
+
 					issue.setIssueDate(sdf.parse(bookForm.getIssueDate()));
 					issue.setReturnDate(sdf.parse(bookForm.getReturnDate()));
 
+					dao.updateBook(book);
+					dao.updateMember(member);
 					dao.issueNewBook(issue);
 					System.out.println(issue);
 					return mapping.findForward("success");
 
-				// }
+				}
 			}
 		}
 
